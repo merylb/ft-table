@@ -1,0 +1,19 @@
+{
+  "search-multi-criteria": "Recherche multicritère",
+  "search": "Recherche",
+  "invoice_number": "N°. Facture",
+  "invoice_date": "Date",
+  "invoice_beneficiary": "Bénéficiaire",
+  "taxed_amount": "Montant TTC",
+  "and": "Et",
+  "or": "Ou",
+  "filter":"Filtre",
+  "now_filter":"Aucun filtre",
+
+ "items-per-page":"Lignes par Page",
+ "next-page":"Page suivante",
+ "previous-page":"Page précédente",
+ "of":"de",
+  "select":"Selectionner"
+
+}

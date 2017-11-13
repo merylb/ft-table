@@ -1,0 +1,138 @@
+<mat-expansion-panel>
+    <mat-expansion-panel-header>
+        <mat-panel-title>
+            <span>{{'search-multi-criteria'|translate}}</span>
+        </mat-panel-title>
+    </mat-expansion-panel-header>
+    <div>
+        <div class="expansion-content" fxLayout="column" fxLayoutWrap="wrap">
+            <div *ngFor="let col of  filterColumns">
+                <mat-form-field class="smaller-select">
+                    <mat-select [(ngModel)]="col.filter" placeholder="{{'filter'|translate}}">
+                        <mat-option *ngFor="let filter of filters" [value]="filter">
+                            {{ filter|translate}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field *ngIf="col.column['type']=='text'">
+                    <input matInput [(ngModel)]="col.value" placeholder="{{col.column['label']|translate}}">
+                </mat-form-field>
+                <mat-form-field *ngIf="col.column['type']=='number'">
+                    <input matInput [(ngModel)]="col.value" type="number" min="0"
+                           placeholder="{{col.column['label']|translate}}">
+                </mat-form-field>
+                <mat-form-field *ngIf="col.column['type']=='date'">
+                    <input type="text" matInput [(ngModel)]="col.value" [matDatepicker]="picker"
+                           placeholder="{{'date'|translate}}">
+                    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                    <mat-datepicker #picker></mat-datepicker>
+                </mat-form-field>
+            </div>
+        </div>
+        <div fxLayout="row">
+            <button (click)="getCostumeData()" mat-raised-button color="primary" [matMenuTriggerFor]="filterMenu">
+                <mat-icon svgIcon="plus"></mat-icon>
+                <span>{{'filter'|translate}}</span>
+            </button>
+            <mat-menu #filterMenu="matMenu">
+                <button mat-menu-item
+                        *ngFor="let col of  filterNonUsedColumns()"
+                        (click)="addFilterColumn(col)">
+                    <mat-icon *ngIf="getFilterColumns(col)" svgIcon="check"></mat-icon>
+                    <span> {{ col['label']|translate}}</span>
+                </button>
+
+                <button mat-menu-item *ngIf="filterNonUsedColumns().length==0">
+                    <span> {{ 'now_filter'|translate}}</span>
+                </button>
+            </mat-menu>
+            <span fxFlex></span>
+            <button (click)="getCostumeData()" mat-raised-button color="primary">
+                {{'search'|translate}}
+            </button>
+        </div>
+    </div>
+</mat-expansion-panel>
+<div class="table-container">
+    <mat-toolbar>
+        <mat-form-field floatPlaceholder="never">
+            <input matInput #filter placeholder="{{'search'|translate}}" (focus)="true">
+        </mat-form-field>
+        <span fxFlex></span>
+        <button mat-icon-button [matMenuTriggerFor]="menu">
+            <mat-icon svgIcon="dots-vertical"></mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+            <div *ngFor="let col of  columns">
+                <button mat-menu-item *ngIf="!['action_column', 'select_column'].includes(col.name)"
+                        (click)="hideColumn(col)"
+                        [disabled]="col['is_required']">
+                    <mat-icon *ngIf="isShown(col)" svgIcon="check"></mat-icon>
+                    <span> {{col['label']}}</span>
+                </button>
+            </div>
+        </mat-menu>
+    </mat-toolbar>
+    <cdk-table #table [dataSource]="tableSource" matSort>
+
+        <ng-container *ngFor="let col of  columns " cdkColumnDef="{{col['name']}}">
+            <ng-template [ngIf]="isShown(col)">
+
+                <!-- headers  -->
+                <ng-template [ngIf]="!['action_column', 'select_column'].includes(col.name)">
+                    <cdk-header-cell *cdkHeaderCellDef class="table-header-cell" mat-sort-header>
+                        <span>{{col['label']|translate}}</span>
+                    </cdk-header-cell>
+                </ng-template>
+                <ng-template [ngIf]="col.name=='action_column'">
+                    <cdk-header-cell *cdkHeaderCellDef class="table-header-cell"></cdk-header-cell>
+                </ng-template>
+                <ng-template [ngIf]="col.name=='select_column'">
+                    <cdk-header-cell *cdkHeaderCellDef class="table-header-cell">
+                        <mat-checkbox (change)="$event ? masterToggle() : null; updateSelection();"
+                                      [checked]="isAllSelected()"></mat-checkbox>
+                         </cdk-header-cell>
+
+                </ng-template>
+                <!-- rows  -->
+
+                <ng-template [ngIf]="!col['is_icon'] && !['action_column', 'select_column'].includes(col.name)">
+                    <cdk-cell *cdkCellDef="let row" class="table-cell"
+                              [ngClass]="col['styleClasses']">
+                        {{row[col['name']]}}
+                    </cdk-cell>
+                </ng-template>
+                <ng-template [ngIf]="col['is_icon'] ">
+                    <cdk-cell *cdkCellDef="let row" class="table-cell" [ngClass]="col['styleClasses']">
+                        <mat-icon>{{col['icon_name'] }}</mat-icon>
+                    </cdk-cell>
+                </ng-template>
+                <ng-template [ngIf]="col['name']=='action_column' ">
+                    <cdk-cell *cdkCellDef="let row" class="table-cell">
+                        <button mat-icon-button *ngFor="let action  of  actions['single']">
+                            <mat-icon svgIcon="{{ action['icon']}}"></mat-icon>
+                        </button>
+                    </cdk-cell>
+                </ng-template>
+                <ng-template [ngIf]="col['name']=='select_column' ">
+                    <cdk-cell *cdkCellDef="let row" class="table-cell">
+                        <mat-checkbox  (click)="$event.stopPropagation()"
+                                      (change)="$event ? selection.toggle(row) : null; updateSelection();"
+                                      [checked]="selection.isSelected(row)"></mat-checkbox>
+
+                    </cdk-cell>
+                </ng-template>
+            </ng-template>
+        </ng-container>
+        <cdk-header-row *cdkHeaderRowDef="displayedColumns()" class="table-header-row"></cdk-header-row>
+        <cdk-row *cdkRowDef="let row; columns: displayedColumns();" class="table-row"
+                 (click)="selection.toggle(row); updateSelection();" ></cdk-row>
+
+    </cdk-table>
+    <mat-paginator #paginator
+                   [length]="exampleDatabase.data.length"
+                   [pageIndex]="0"
+                   [pageSize]="25"
+                   [pageSizeOptions]="[5, 10, 25, 100]">
+    </mat-paginator>
+</div>

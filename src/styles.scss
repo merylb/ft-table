@@ -1,0 +1,29 @@
+/* You can add global styles to this file, and also import other style files */
+
+@import '~@angular/material/prebuilt-themes/indigo-pink.css';
+@import "app/ft-cdk-table/ft-cdk-table.component";
+
+$mn-small-spacer: 6px;
+button{
+  //@include md-button(26px, 0 $mn-small-spacer, 0, rem(1.4), false);
+
+  &.mat-raised-button {
+    padding: 0 $mn-small-spacer 0 ($mn-small-spacer/3);
+
+    .mat-icon {
+      line-height: 20px;
+      color: inherit !important;
+    }
+  }
+
+  &:first-child {
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+  }
+  &:last-child {
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+  }
+
+}
+
